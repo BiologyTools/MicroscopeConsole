@@ -10,11 +10,20 @@ namespace MicroscopeConsole
     {
         static void Main(string[] args)
         {
-            Microscope.Initialize(args[0]);
-            for (int i = 1; i < args.Length; i++)
+            string st = args[0];
+            st = st.Replace('_',' ');
+            Microscope.Initialize(st);
+            do
             {
-                CommandRunner.Run((CommandRunner.Command)JsonConvert.DeserializeObject(args[i]));
-            }
+                string s = Console.ReadLine();
+                if(s.Length > 0 && s.StartsWith("Command:"))
+                {
+                    s = s.Replace("Command:", "");
+                    CommandRunner.Command com = JsonConvert.DeserializeObject<CommandRunner.Command> (s);
+                    CommandRunner.Run(com);
+                }
+                System.Threading.Thread.Sleep(20);
+            } while (true);
         }
     }
 }

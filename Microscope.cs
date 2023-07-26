@@ -30,7 +30,9 @@ namespace MicroscopeConsole
                 SetHXPShutter,
                 SetRLShutter,
                 SetTLShutter,
-                SetSWLimit,
+                SetStageSWLimit,
+                SetFocusSWLimit,
+                SetCalibration,
                 GetStage,
                 GetFocus,
                 GetObjective,
@@ -41,7 +43,9 @@ namespace MicroscopeConsole
                 GetHXPShutter,
                 GetRLShutter,
                 GetTLShutter,
-                GetSWLimit,
+                GetStageSWLimit,
+                GetFocusSWLimit,
+                GetCalibration,
             }
             public double[] doubles;
             public Command.Type type;
@@ -75,36 +79,56 @@ namespace MicroscopeConsole
                     Microscope.RLShutter.SetPosition((int)c.doubles[0]); break;
                 case Command.Type.SetTLShutter:
                     Microscope.TLShutter.SetPosition((int)c.doubles[0]); break;
-                case Command.Type.SetSWLimit:
+                case Command.Type.SetStageSWLimit:
                     Microscope.Stage.SetSWLimit(c.doubles[0], c.doubles[1], c.doubles[2], c.doubles[3]); break;
+                case Command.Type.SetCalibration:
+                    Microscope.CalibrateXYZ((Microscope.Calibration)c.doubles[0]); break;
                 case Command.Type.GetStage:
-                    Output(Microscope.Stage.GetPosition(true)); break;
+                    Output(c.type, Microscope.Stage.GetPosition(true)); break;
                 case Command.Type.GetFocus:
-                    Output(Microscope.Focus.GetFocus()); break;
+                    Output(c.type, Microscope.Focus.GetFocus()); break;
                 case Command.Type.GetObjective:
-                    Output(Microscope.Objectives.GetPosition()); break;
+                    Output(c.type, (double)Microscope.Objectives.GetPosition()); break;
                 case Command.Type.GetFilterWheel:
-                    Output(Microscope.FilterWheel.GetPosition()); break;
+                    Output(c.type, (double)Microscope.FilterWheel.GetPosition()); break;
                 case Command.Type.GetHXP:
-                    Output(Microscope.HXP.GetPosition()); break;
+                    Output(c.type, Microscope.HXP.GetPosition()); break;
                 case Command.Type.GetRLHalogen:
-                    Output(Microscope.RLHalogen.GetPosition()); break;
+                    Output(c.type, Microscope.RLHalogen.GetPosition()); break;
                 case Command.Type.GetTLHalogen:
-                    Output(Microscope.TLHalogen.GetPosition()); break;
+                    Output(c.type, Microscope.TLHalogen.GetPosition()); break;
                 case Command.Type.GetHXPShutter:
-                    Output(Microscope.HXPShutter.GetPosition()); break;
+                    Output(c.type, (double)Microscope.HXPShutter.GetPosition()); break;
                 case Command.Type.GetRLShutter:
-                    Output(Microscope.RLShutter.GetPosition()); break;
+                    Output(c.type, (double)Microscope.RLShutter.GetPosition()); break;
                 case Command.Type.GetTLShutter:
-                    Output(Microscope.TLShutter.GetPosition()); break;
-                case Command.Type.GetSWLimit:
-                    Output(Microscope.Stage.GetSWLimit()); break;
+                    Output(c.type, (double)Microscope.TLShutter.GetPosition()); break;
+                case Command.Type.GetStageSWLimit:
+                    Output(c.type, Microscope.Stage.GetSWLimit()); break;
+                case Command.Type.GetFocusSWLimit:
+                    Output(c.type, Microscope.Focus.GetSWLimit()); break;
                 default:break;
             }
         }
-        private static void Output(object p)
+        private static void Output(Command.Type t, object p)
         {
-            Console.WriteLine(JsonConvert.SerializeObject(p));
+            string s = "";
+            if(p.GetType() == typeof(Command))
+            {
+                s = JsonConvert.SerializeObject((Command)p);
+            }
+            else if(p.GetType() == typeof(PointD))
+            {
+                PointD pd = (PointD)p;
+                Command com = new Command(t, new double[] {pd.X,pd.Y});
+                s = JsonConvert.SerializeObject(com);
+            }
+            else if (p.GetType() == typeof(double))
+            {
+                Command com = new Command(t, new double[] { (double)p});
+                s = JsonConvert.SerializeObject(com);
+            }
+            Console.WriteLine(s);
         }
     }
 
@@ -285,7 +309,7 @@ namespace MicroscopeConsole
             maxY = (double)axisType.InvokeMember("GetSWLimit", BindingFlags.InvokeMethod, null, yAxis, args);
             args[0] = false;
             minY = (double)axisType.InvokeMember("GetSWLimit", BindingFlags.InvokeMethod, null, yAxis, args);
-            return new CommandRunner.Command(CommandRunner.Command.Type.GetSWLimit, new double[] { minX, minY, maxX, maxY });
+            return new CommandRunner.Command(CommandRunner.Command.Type.GetStageSWLimit, new double[] { minX, minY, maxX, maxY });
         }
        
         /// It sets the limits of the stage movement
@@ -885,7 +909,7 @@ namespace MicroscopeConsole
             Point3D.SetLimits(Stage.minX, Stage.maxX, Stage.minY, Stage.maxY, Focus.lowerLimit, Focus.upperLimit);
             PointD.SetLimits(Stage.minX, Stage.maxX, Stage.minY, Stage.maxY);
             //We calibrate the stage and focus, so that images are taken always with same calibration
-            CalibrateXYZ("OnLowerLimit");
+            CalibrateXYZ(Microscope.Calibration.OnLowerLimit);
             initialized = true;
         }
 
@@ -957,8 +981,14 @@ namespace MicroscopeConsole
         /// calibrates them
         /// 
         /// @param calibMode "OnLowerLimit"
-        public static void CalibrateXYZ(string calibMode)
+        public enum Calibration
         {
+            OnLowerLimit,
+            OnUpperLimit,
+        }
+        public static void CalibrateXYZ(Calibration cal)
+        {
+            string calibMode = cal.ToString();
             //We check to see if focus & stage are correctly calibrated on lower limit and perform calibration if necessary
             CommandRunner.Command com = Stage.GetPosition(true);
             PointD cur = new PointD(com.doubles[0], com.doubles[1]);
