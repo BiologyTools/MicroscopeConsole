@@ -60,29 +60,65 @@ namespace MicroscopeConsole
             switch (c.type)
             {
                 case Command.Type.SetStage:
-                    Microscope.Stage.SetPosition(c.doubles[0], c.doubles[1]);break;
+                    {
+                        Microscope.Stage.SetPosition(c.doubles[0], c.doubles[1]);
+                        Output(c.type, c); break;
+                    }
                 case Command.Type.SetFocus:
-                    Microscope.Focus.SetFocus(c.doubles[0]); break;
+                    {
+                        Microscope.Focus.SetFocus(c.doubles[0]); 
+                        Output(c.type, c); break;
+                    }
                 case Command.Type.SetObjective:
-                    Microscope.Objectives.SetPosition((int)c.doubles[0]); break;
+                    {
+                        Microscope.Objectives.SetPosition((int)c.doubles[0]); 
+                        Output(c.type, c); break;
+                    }
                 case Command.Type.SetFilterWheel:
-                    Microscope.FilterWheel.SetPosition((int)c.doubles[0]); break;
+                    {
+                        Microscope.FilterWheel.SetPosition((int)c.doubles[0]); 
+                        Output(c.type, c); break;
+                    }
                 case Command.Type.SetHXP:
-                    Microscope.HXP.SetPosition(c.doubles[0]); break;
+                    {
+                        Microscope.HXP.SetPosition(c.doubles[0]);
+                        Output(c.type, c); break;
+                    }
                 case Command.Type.SetRLHalogen:
-                    Microscope.RLHalogen.SetPosition(c.doubles[0]); break;
+                    {
+                        Microscope.RLHalogen.SetPosition(c.doubles[0]); 
+                        Output(c.type, c); break;
+                    }
                 case Command.Type.SetTLHalogen:
-                    Microscope.TLHalogen.SetPosition(c.doubles[0]); break;
+                    {
+                        Microscope.TLHalogen.SetPosition(c.doubles[0]);
+                        Output(c.type, c); break;
+                    }
                 case Command.Type.SetHXPShutter:
-                    Microscope.HXPShutter.SetPosition((int)c.doubles[0]); break;
+                    {
+                        Microscope.HXPShutter.SetPosition((int)c.doubles[0]);
+                        Output(c.type, c); break;
+                    }
                 case Command.Type.SetRLShutter:
-                    Microscope.RLShutter.SetPosition((int)c.doubles[0]); break;
+                    {
+                        Microscope.RLShutter.SetPosition((int)c.doubles[0]);
+                        Output(c.type, c); break;
+                    }
                 case Command.Type.SetTLShutter:
-                    Microscope.TLShutter.SetPosition((int)c.doubles[0]); break;
+                    {
+                        Microscope.TLShutter.SetPosition((int)c.doubles[0]);
+                        Output(c.type, c); break;
+                    }
                 case Command.Type.SetStageSWLimit:
-                    Microscope.Stage.SetSWLimit(c.doubles[0], c.doubles[1], c.doubles[2], c.doubles[3]); break;
+                    {
+                        Microscope.Stage.SetSWLimit(c.doubles[0], c.doubles[1], c.doubles[2], c.doubles[3]);
+                        Output(c.type, c); break;
+                    }
                 case Command.Type.SetCalibration:
-                    Microscope.CalibrateXYZ((Microscope.Calibration)c.doubles[0]); break;
+                    {
+                        Microscope.CalibrateXYZ((Microscope.Calibration)c.doubles[0]); 
+                        Output(c.type, c); break;
+                    }
                 case Command.Type.GetStage:
                     Output(c.type, Microscope.Stage.GetPosition(true)); break;
                 case Command.Type.GetFocus:
